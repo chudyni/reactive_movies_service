@@ -10,6 +10,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.server.RequestPredicates;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -37,6 +40,7 @@ public class ReactiveMoviesServiceApplication {
     }
 
     //similar purpose as @RequestMapping, but easier to override
+    //the same mappings as in MovieRestController
     @Bean
     RouterFunction<?> routerFunction(MovieService movieService) {
         return RouterFunctions.route(RequestPredicates.GET("/movies"),
@@ -55,6 +59,32 @@ public class ReactiveMoviesServiceApplication {
 		SpringApplication.run(ReactiveMoviesServiceApplication.class, args);
 	}
 
+}
+
+//made with RouterFunction
+@RestController
+class MovieRestController {
+
+    private MovieService movieService;
+
+    public MovieRestController(MovieService movieService) {
+        this.movieService = movieService;
+    }
+
+    @GetMapping("/movies")
+    public Flux<Movie> all() {
+        return this.movieService.getAllMovies();
+    }
+
+    @GetMapping("/movies/{id}")
+    public Mono<Movie> byId(@PathVariable final String id) {
+        return this.movieService.getMovieById(id);
+    }
+
+    @GetMapping(value = "/movies/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<MovieEvent> events(@PathVariable final String id) {
+        return this.movieService.getEvents(id);
+    }
 }
 
 @Service
