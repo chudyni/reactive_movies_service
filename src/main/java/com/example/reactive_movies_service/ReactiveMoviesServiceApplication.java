@@ -8,13 +8,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Date;
 
 @SpringBootApplication
 public class ReactiveMoviesServiceApplication {
 
+    //To make it work: docker run -p 27017:27017 -d mongo
     @Bean
     ApplicationRunner demoData(MovieRepository movieRepository) {
         return args -> {
@@ -31,6 +35,29 @@ public class ReactiveMoviesServiceApplication {
 		SpringApplication.run(ReactiveMoviesServiceApplication.class, args);
 	}
 
+}
+
+@Service
+class MovieService {
+    private final MovieRepository movieRepository;
+
+    MovieService(MovieRepository movieRepository) {
+        this.movieRepository = movieRepository;
+    }
+
+    public Flux<Movie> getAllMovies() {
+        return this.movieRepository.findAll();
+    }
+
+    public Mono<Movie> getMovieById(String id) {
+        return this.movieRepository.findById(id);
+    }
+
+    //simulate traffic
+    public Flux<MovieEvent> getEvents(String movieId) {
+        return Flux.<MovieEvent>generate(sink -> sink.next(new MovieEvent(movieId, new Date())))
+                .delayElements(Duration.ofSeconds(1l));
+    }
 }
 
 interface MovieRepository extends ReactiveMongoRepository<Movie,String> {
