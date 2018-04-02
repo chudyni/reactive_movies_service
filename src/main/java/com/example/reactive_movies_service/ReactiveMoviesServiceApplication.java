@@ -8,7 +8,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.server.RequestPredicates;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.RouterFunctions;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -29,6 +34,21 @@ public class ReactiveMoviesServiceApplication {
                     .thenMany(movieRepository.findAll())
                     .subscribe(System.out::println);
         };
+    }
+
+    //similar purpose as @RequestMapping, but easier to override
+    @Bean
+    RouterFunction<?> routerFunction(MovieService movieService) {
+        return RouterFunctions.route(RequestPredicates.GET("/movies"),
+                    req -> ServerResponse.ok()
+                            .body(movieService.getAllMovies(), Movie.class))
+                .andRoute(RequestPredicates.GET("/movies/{id}"),
+                    req -> ServerResponse.ok()
+                            .body(movieService.getMovieById(req.pathVariable("id")), Movie.class))
+                .andRoute(RequestPredicates.GET("/movies/{id}/events"),
+                    req -> ServerResponse.ok()
+                            .contentType(MediaType.TEXT_EVENT_STREAM)
+                            .body(movieService.getEvents(req.pathVariable("id")), MovieEvent.class));
     }
 
 	public static void main(String[] args) {
