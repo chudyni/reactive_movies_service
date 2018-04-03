@@ -26,7 +26,8 @@ import java.util.Date;
 @SpringBootApplication
 public class ReactiveMoviesServiceApplication {
 
-    //To make it work: docker run -p 27017:27017 -d mongo
+    //To make it work:
+    // docker run -p 27017:27017 -d mongo
     @Bean
     ApplicationRunner demoData(MovieRepository movieRepository) {
         return args -> {
@@ -62,30 +63,30 @@ public class ReactiveMoviesServiceApplication {
 }
 
 //made with RouterFunction
-@RestController
-class MovieRestController {
-
-    private MovieService movieService;
-
-    public MovieRestController(MovieService movieService) {
-        this.movieService = movieService;
-    }
-
-    @GetMapping("/movies")
-    public Flux<Movie> all() {
-        return this.movieService.getAllMovies();
-    }
-
-    @GetMapping("/movies/{id}")
-    public Mono<Movie> byId(@PathVariable final String id) {
-        return this.movieService.getMovieById(id);
-    }
-
-    @GetMapping(value = "/movies/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<MovieEvent> events(@PathVariable final String id) {
-        return this.movieService.getEvents(id);
-    }
-}
+//@RestController
+//class MovieRestController {
+//
+//    private MovieService movieService;
+//
+//    public MovieRestController(MovieService movieService) {
+//        this.movieService = movieService;
+//    }
+//
+//    @GetMapping("/movies")
+//    public Flux<Movie> all() {
+//        return this.movieService.getAllMovies();
+//    }
+//
+//    @GetMapping("/movies/{id}")
+//    public Mono<Movie> byId(@PathVariable final String id) {
+//        return this.movieService.getMovieById(id);
+//    }
+//
+//    @GetMapping(value = "/movies/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+//    public Flux<MovieEvent> events(@PathVariable final String id) {
+//        return this.movieService.getEvents(id);
+//    }
+//}
 
 @Service
 class MovieService {
